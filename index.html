@@ -41,13 +41,22 @@
   .item .head .code { font-weight:700; font-variant-numeric:tabular-nums; min-width:44px; color:var(--green-deep); }
   .item .head .name { flex:1; font-size:15px; }
   .tri { display:inline-flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
-  .tri button { width:48px; padding:8px 0; border:0; border-right:1px solid var(--line); border-radius:0; font-size:17px; background:var(--card); }
+  .tri button { width:auto; padding:8px 12px; border:0; border-right:1px solid var(--line); border-radius:0; font-size:14px; background:var(--card); font-weight:500; }
   .tri button:last-child { border-right:0; }
   .tri button.on-Y { background:var(--y); } .tri button.on-N { background:var(--n); } .tri button.on-Q { background:var(--q); }
   .tri-row { display:flex; align-items:center; gap:10px; } .tri-row .lbl { font-size:13px; color:var(--muted); }
   .chips { display:flex; flex-wrap:wrap; gap:6px; }
   .chips button { width:auto; padding:6px 10px; font-size:13px; font-weight:500; border-radius:999px; background:var(--chip); border-color:transparent; }
   .chips button.on { background:var(--chip-on); color:var(--green-ink); }
+  .chips button.add { background:transparent; border:1px dashed var(--line); color:var(--muted); }
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:20; display:none; align-items:flex-end; } .overlay.show { display:flex; }
+  .sheet { background:var(--card); color:var(--ink); width:100%; max-height:80vh; overflow:auto; border-radius:16px 16px 0 0; padding:14px 16px; padding-bottom:calc(14px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:10px; }
+  .sheet h3 { margin:0; font-size:16px; display:flex; justify-content:space-between; align-items:center; }
+  .caseRow { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line); }
+  .caseRow .info { flex:1; min-width:0; } .caseRow .info b { display:block; font-variant-numeric:tabular-nums; } .caseRow .info small { color:var(--muted); font-size:12px; }
+  .caseRow.cur .info b { color:var(--green-deep); }
+  .caseRow button { width:auto; padding:7px 10px; font-size:13px; }
+  .tag { font-size:11px; padding:2px 7px; border-radius:999px; background:var(--chip); color:var(--muted); } .tag.sent { background:var(--y); color:var(--green-deep); }
   .field { display:flex; flex-direction:column; gap:6px; }
   .thumbs { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
   .thumbs figure { margin:0; position:relative; aspect-ratio:4/3; border-radius:8px; overflow:hidden; background:var(--chip); }
@@ -126,13 +135,22 @@
 
   <div class="card">
     <h2>初判可補助項目 <span class="badge muted" id="itemsBadge"></span></h2>
-    <p class="hint">☑ 建議申請、☒ 暫不建議、？ 待釐清。展開需要的項目即可。填了位置或損壞情形但沒按初判 → 自動記「？」。</p>
+    <p class="hint">展開需要的項目即可。填了位置或損壞情形但沒按初判 → 自動記「待釐清」。</p>
     <div id="items"></div>
   </div>
 
   <div class="card">
     <h2>現場備註</h2>
-    <textarea id="note" placeholder="違章、鄰房、要提醒桌機的事"></textarea>
+    <div id="remarkChips"></div>
+    <textarea id="note" placeholder="違章、鄰房、要提醒桌機的事（可補字）"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>片語設定</h2>
+    <p class="hint">片語來自規則表；每排最後的「＋」可自己加，加的片語存在這支手機，也會隨現勘包一起傳回桌機。整份片語可匯出給組員、或貼入別人的匯出檔。</p>
+    <div class="row"><button class="sm" id="btnOptExport">匯出片語</button><button class="sm" id="btnOptImport">匯入片語</button><button class="sm" id="btnOptReset">清除自訂</button></div>
+    <textarea id="optIn" placeholder="貼上片語 JSON 後按「匯入片語」" hidden></textarea>
+    <p class="hint" id="optHint"></p>
   </div>
 
   <div class="card">
@@ -148,6 +166,7 @@
   <button class="primary" id="btnShare2">分享現勘包</button>
 </div>
 <div class="toast" id="toast"></div>
+<div class="overlay" id="caseSheet"><div class="sheet"><h3>手機上的案件 <button class="sm" id="btnNewCase">＋ 新案</button></h3><div id="caseList"></div><button id="btnCloseSheet">關閉</button></div></div>
 
 <script>
 // rules.js — 老宅延壽輔導組作業系統 規則表（「法條」：數字與清單全部集中在這裡）
@@ -358,9 +377,14 @@ window.RULES = {
       ST:  ["梯間牆面剝落", "扶手鬆動", "踏步磨損", "照明不足", "梯間漏水"],
       PL:  ["給水管老舊", "排水管滲漏", "電氣管線老舊", "瓦斯管線外露", "污水管堵塞"],
       DM:  ["老舊招牌", "鐵窗突出", "違建鐵皮", "廢棄設備", "遮雨棚鏽蝕"],
-      IN1: ["樓梯無扶手", "浴廁無扶手", "門檻高低差", "門扇過窄", "地面濕滑", "陽台門檻"],
-      IN2: ["給水管鏽蝕漏水", "排水不良", "電線老舊", "無漏電斷路器", "瓦斯管線老舊"],
-      IN3: ["配合管線更新需拆除天花", "配合扶手需補強牆面", "配合門扇需修門框"]
+      IN1a: ["樓梯無扶手", "浴廁無扶手", "扶手鬆動", "扶手高度不當"],
+      IN1b: ["門檻高低差", "陽台門檻", "浴廁地坪高差", "入口台階"],
+      IN1c: ["門扇過窄", "門檻絆腳", "推門不便（宜改拉門）", "門扇損壞"],
+      IN1d: ["地面濕滑", "磁磚破損", "陽台欄杆過低", "窗台無防墜"],
+      IN2a: ["給水管鏽蝕漏水", "排水不良", "水壓不足", "污水管堵塞"],
+      IN2b: ["電線老舊", "無漏電斷路器", "插座不足／燒焦", "配電箱老舊"],
+      IN2c: ["瓦斯管線老舊", "管線外露", "無遮斷閥", "熱水器位置不當"],
+      IN3:  ["配合管線更新需拆除天花", "配合扶手需補強牆面", "配合門扇需修門框"]
     },
     fix: {
       F:   ["局部剔除重貼", "全面剔除更新", "外牆塗料防水", "裂縫灌注補強", "拉皮（輕質板材）"],
@@ -371,10 +395,16 @@ window.RULES = {
       ST:  ["牆面修補粉刷", "扶手更新", "踏步防滑", "照明更新"],
       PL:  ["管線更新", "局部修繕", "增設漏電斷路器"],
       DM:  ["拆除", "拆除後修補"],
-      IN1: ["加裝扶手", "高低差改善（斜坡）", "門扇改善（推拉門）", "地面防滑處理", "增設防墜設施"],
-      IN2: ["給排水管更新", "電氣管線更新", "燃氣管線更新"],
-      IN3: ["必要室內裝修（配合前二項）"]
+      IN1a: ["加裝扶手", "更新扶手", "雙側扶手"],
+      IN1b: ["斜坡整平", "門檻拆除", "地坪墊高"],
+      IN1c: ["改拉門", "門扇加寬", "門檻拆除"],
+      IN1d: ["地面防滑處理", "更換防滑磚", "增設防墜欄杆", "窗台防墜設施"],
+      IN2a: ["給排水管更新", "局部更換", "增設止水閥"],
+      IN2b: ["電氣管線更新", "增設漏電斷路器", "配電箱更新"],
+      IN2c: ["燃氣管線更新", "增設遮斷閥", "熱水器移位"],
+      IN3:  ["必要室內裝修（配合前二項）"]
     },
+    remarks: ["屋主積極配合", "由家屬陪同", "現場有承租人", "鄰房共壁待協調", "建議優先處理立面", "建議併同申請屋頂", "資料待補：謄本", "資料待補：使用執照", "資料待補：竣工圖", "須再約第二次現勘"],
     positionsIn: ["全戶", "客廳", "餐廳", "廚房", "浴廁", "主臥", "臥室", "走道", "樓梯", "陽台", "1樓", "2樓", "3樓", "4樓", "5樓", "6樓", "其他"],
     ageNotes: ["依使用執照", "依建物謄本", "依完工證明", "申請人自述", "待查"],
     floorsNotes: ["依使用執照", "依建物謄本", "含頂樓加蓋", "含夾層", "待查"],
@@ -413,7 +443,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 </script>
 <script>
 (function(){
-  const R = window.RULES; const O = R.options || {}; const $ = s => document.querySelector(s); const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const R = window.RULES; let CUSTOM = {}; try { CUSTOM = JSON.parse(localStorage.getItem('yloh-mobile.options') || '{}'); } catch(e){}
+  // 有效片語 = 規則表 ∪ 自訂（自訂附在後面）
+  const optList = (key, sub) => { const base = sub ? ((R.options||{})[key]||{})[sub] : (R.options||{})[key]; const ext = sub ? ((CUSTOM[key]||{})[sub]) : CUSTOM[key]; return [...(base||[]), ...(ext||[]).filter(x => !(base||[]).includes(x))]; };
+  function addCustom(key, sub, phrase){ if(sub){ CUSTOM[key] = CUSTOM[key] || {}; CUSTOM[key][sub] = CUSTOM[key][sub] || []; if(!optList(key,sub).includes(phrase)) CUSTOM[key][sub].push(phrase); } else { CUSTOM[key] = CUSTOM[key] || []; if(!optList(key).includes(phrase)) CUSTOM[key].push(phrase); } saveCustom(); }
+  function saveCustom(){ try { localStorage.setItem('yloh-mobile.options', JSON.stringify(CUSTOM)); } catch(e){} }
+  function effectiveOptions(){ const out = {}; const keys = new Set([...Object.keys(R.options||{}), ...Object.keys(CUSTOM)]); keys.forEach(k => { const b = (R.options||{})[k]; if(Array.isArray(b) || Array.isArray(CUSTOM[k])) out[k] = optList(k); else if(b && typeof b === 'object' || CUSTOM[k] && typeof CUSTOM[k] === 'object'){ out[k] = {}; new Set([...Object.keys(b||{}), ...Object.keys(CUSTOM[k]||{})]).forEach(sub => out[k][sub] = optList(k, sub)); } else out[k] = b; }); return out; }
+  const O = new Proxy({}, { get:(_, k) => { const b = (R.options||{})[k]; if(Array.isArray(b) || Array.isArray(CUSTOM[k])) return optList(k); if((b && typeof b === 'object') || (CUSTOM[k] && typeof CUSTOM[k] === 'object')) return new Proxy({}, { get:(_2, sub) => optList(k, sub) }); return b; } }); const $ = s => document.querySelector(s); const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   let toastT; function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200); }
   const SEP = '、';
 
@@ -432,12 +468,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   let cur = blank(); let photos = {}; let urls = {};
   function url(n){ if(!urls[n] && photos[n]) urls[n] = URL.createObjectURL(photos[n]); return urls[n] || ''; }
 
-  async function save(quiet){ readForm(); if(!cur.slug){ if(!quiet) toast('先填案號'); return false; } try { await dbPut({ slug:cur.slug, data:cur, photos }); if(!quiet) toast('已儲存在手機'); return true; } catch(e){ toast('儲存失敗：' + e.message); return false; } }
+  async function save(quiet){ readForm(); if(!cur.slug){ if(!quiet) toast('先填案號'); return false; } cur.updatedAt = new Date().toISOString(); try { await dbPut({ slug:cur.slug, data:cur, photos }); if(!quiet) toast('已儲存在手機'); return true; } catch(e){ toast('儲存失敗：' + e.message); return false; } }
   async function load(slug){ const r = await dbGet(slug); Object.values(urls).forEach(u => URL.revokeObjectURL(u)); urls = {}; if(r){ cur = Object.assign(blank(), r.data); photos = r.photos || {}; } else { cur = blank(); cur.slug = slug; photos = {}; } renderAll(); }
 
   // ---- 表單 ↔ 資料 ----
   function readForm(){ cur.slug = $('#slug').value.trim().toUpperCase(); cur.type = $('#type').value; cur.applicant = $('#applicant').value; cur.floors = $('#floors').value; cur.addrText = $('#addr').value; cur.visitDate = $('#vDate').value; cur.visitTime = $('#vTime').value; cur.visitWith = $('#vWith').value; const w = $('#vWeather').value; cur.visitWeather = w === '__other' ? $('#vWeatherOther').value : w; cur.note = $('#note').value; }
-  function fillForm(){ $('#slug').value = cur.slug; $('#type').value = cur.type; renderFloors(); $('#floors').value = cur.floors; $('#applicant').value = cur.applicant; $('#addr').value = cur.addrText; $('#vDate').value = cur.visitDate; $('#vTime').value = cur.visitTime; $('#vWith').value = cur.visitWith; renderWeather(); $('#note').value = cur.note; $('#hSub').textContent = cur.slug ? `${cur.slug}　${cur.applicant || ''}` : '尚未載入案件'; }
+  function fillForm(){ $('#slug').value = cur.slug; $('#type').value = cur.type; renderFloors(); $('#floors').value = cur.floors; $('#applicant').value = cur.applicant; $('#addr').value = cur.addrText; $('#vDate').value = cur.visitDate; $('#vTime').value = cur.visitTime; $('#vWith').value = cur.visitWith; renderWeather(); $('#note').value = cur.note; renderRemarks(); $('#hSub').textContent = cur.slug ? `${cur.slug}　${cur.applicant || ''}` : '尚未載入案件'; }
   function renderFloors(){ $('#floors').innerHTML = R.floors[cur.type].map(f => `<option value="${f}">${f} 樓</option>`).join(''); }
   function renderWeather(){ const list = O.weather || []; const v = cur.visitWeather || ''; const known = !v || list.includes(v); $('#vWeather').innerHTML = `<option value="">—</option>` + list.map(x => `<option value="${esc(x)}" ${x===v?'selected':''}>${esc(x)}</option>`).join('') + `<option value="__other" ${!known?'selected':''}>其他…</option>`; $('#vWeatherOther').hidden = known; $('#vWeatherOther').value = known ? '' : v; }
   $('#vWeather').addEventListener('change', () => { $('#vWeatherOther').hidden = $('#vWeather').value !== '__other'; save(true); });
@@ -447,7 +483,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   // ---- 照片 ----
   function processImage(file){ return new Promise((res, rej) => { const img = new Image(); img.onload = () => { const W = R.photo.w || 1024, H = R.photo.h || 768; const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); let sw = img.naturalWidth, sh = img.naturalHeight, sx = 0, sy = 0; if(sw/sh > 4/3){ const nw = sh*4/3; sx = (sw-nw)/2; sw = nw; } else { const nh = sw*3/4; sy = (sh-nh)/2; sh = nh; } g.drawImage(img, sx, sy, sw, sh, 0, 0, W, H); URL.revokeObjectURL(img.src); let q = 0.9; const step = () => c.toBlob(b => { if(!b) return rej(new Error('toBlob 失敗')); if(b.size <= R.photo.maxKB*1024 || q <= 0.4) res(b); else { q -= 0.1; step(); } }, 'image/jpeg', q); step(); }; img.onerror = () => rej(new Error('讀不了這張圖')); img.src = URL.createObjectURL(file); }); }
-  async function addPhotos(code, files){ readForm(); if(!cur.slug){ toast('先填案號'); return; } let seq = Object.keys(photos).filter(n => n.startsWith(`${cur.slug}-${code}-`)).length; let n = 0; for(const f of files){ try { const blob = code === 'MAP' ? f : await processImage(f); seq++; const name = `${cur.slug}-${code}-${String(seq).padStart(2,'0')}.${code==='MAP' ? (f.name.split('.').pop() || 'jpg') : 'jpg'}`; photos[name] = blob; cur.photos[name] = { code, caption:'' }; n++; } catch(e){ toast(e.message); } }
+  async function addPhotos(code, files){ readForm(); if(!cur.slug){ toast('先填案號'); return; } let seq = Object.keys(photos).filter(n => n.startsWith(`${cur.slug}-${code}-`)).reduce((m, n) => Math.max(m, +(n.match(/-(\d+)\.[a-z]+$/i)||[])[1] || 0), 0); let n = 0; for(const f of files){ try { const blob = code === 'MAP' ? f : await processImage(f); seq++; const name = `${cur.slug}-${code}-${String(seq).padStart(2,'0')}.${code==='MAP' ? (f.name.split('.').pop() || 'jpg') : 'jpg'}`; photos[name] = blob; cur.photos[name] = { code, caption:'' }; n++; } catch(e){ toast(e.message); } }
     if(n && /^S\d$/.test(code)){ const d = cur.site_[code] || (cur.site_[code] = {}); d.shot = true; d.seen = true; }
     await save(true); renderAll(); if(n) toast(`已加入 ${n} 張`); }
   function pick(code, camera){ const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; if(camera) i.capture = 'environment'; else i.multiple = code !== 'MAP'; i.onchange = () => addPhotos(code, [...i.files]); i.click(); }
@@ -455,7 +491,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function phBox(code){ const names = Object.keys(photos).filter(n => cur.photos[n]?.code === code).sort(); return `<div class="photobar"><button type="button" data-cam="${code}">拍照</button><button type="button" data-lib="${code}">相簿</button><span>${names.length} 張</span><span class="warn">「拍照」原圖不進相簿，要留原圖請用相機 App 拍再從相簿選</span></div>` + (names.length ? `<div class="thumbs">${names.map(n => `<figure><img src="${url(n)}" alt="${esc(n)}"><figcaption>${esc(n.replace(cur.slug+'-',''))}</figcaption><button type="button" class="x" data-x="${esc(n)}" aria-label="移除">×</button></figure>`).join('')}</div>` : ''); }
 
   // ---- 片語 chips ----
-  function chips(list, key, value){ const have = String(value || '').split(SEP).map(s => s.trim()).filter(Boolean); return `<div class="chips">${(list || []).map(p => `<button type="button" class="${have.includes(p) ? 'on' : ''}" data-chip="${esc(key)}" data-p="${esc(p)}">${esc(p)}</button>`).join('')}</div>`; }
+  function chips(list, key, value, optKey){ const have = String(value || '').split(SEP).map(s => s.trim()).filter(Boolean); return `<div class="chips">${(list || []).map(p => `<button type="button" class="${have.includes(p) ? 'on' : ''}" data-chip="${esc(key)}" data-p="${esc(p)}">${esc(p)}</button>`).join('')}${optKey ? `<button type="button" class="add" data-addchip="${esc(key)}" data-opt="${esc(optKey)}">＋</button>` : ''}</div>`; }
   function toggleChip(value, p){ const have = String(value || '').split(SEP).map(s => s.trim()).filter(Boolean); const i = have.indexOf(p); if(i >= 0) have.splice(i,1); else have.push(p); return have.join(SEP); }
   // key 格式：site|S1|note、c|F|loc、u|IN1a|dmg
   function getObj(scope, code){ if(scope === 'site') return cur.site_[code] || (cur.site_[code] = {}); const o = scope === 'u' ? cur.unitItems : cur.items; return o[code] || (o[code] = {}); }
@@ -466,6 +502,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     else if(b.dataset.lib) pick(b.dataset.lib, false);
     else if(b.dataset.x) removePhoto(b.dataset.x);
     else if(b.dataset.rec){ const [scope, code, v] = b.dataset.rec.split('|'); const d = getObj(scope, code); d.rec = d.rec === v ? '' : v; save(true); renderItems(); }
+    else if(b.dataset.addchip){ const p = prompt('新增片語（存在這支手機，並隨現勘包回傳）'); if(!p || !p.trim()) return; const [ok, sub] = b.dataset.opt.split('/'); addCustom(ok, sub || null, p.trim()); if(b.dataset.addchip === 'remark'){ cur.note = toggleChip(cur.note, p.trim()); $('#note').value = cur.note; save(true); renderRemarks(); return; } const [scope, code, k] = b.dataset.addchip.split('|'); const d = getObj(scope, code); d[k] = toggleChip(d[k], p.trim()); afterEdit(scope, code); save(true); if(scope === 'site') renderSite(); else renderItems(); }
+    else if(b.dataset.chip === 'remark'){ cur.note = toggleChip($('#note').value, b.dataset.p); $('#note').value = cur.note; save(true); renderRemarks(); }
     else if(b.dataset.chip){ const [scope, code, k] = b.dataset.chip.split('|'); const d = getObj(scope, code); d[k] = toggleChip(d[k], b.dataset.p); afterEdit(scope, code); save(true); if(scope === 'site') renderSite(); else renderItems(); } });
   document.addEventListener('change', e => { const t = e.target;
     if(t.dataset.site){ const [code, k] = t.dataset.site.split('|'); const d = getObj('site', code); d[k] = t.type === 'checkbox' ? t.checked : t.value; if(k === 'note') afterEdit('site', code); save(true); if(k === 'note') renderSite(); }
@@ -476,16 +514,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function renderAll(){ fillForm(); $('#members').innerHTML = (R.members || []).map(m => `<option value="${esc(m)}">`).join('');
     $('#onsite').innerHTML = R.procedure.onsite.map((t, i) => `<label class="chk"><input type="checkbox" data-onsite="${i}" ${cur.onsite[i] ? 'checked' : ''}><span>${esc(t)}</span></label>`).join('');
     $('#basics').innerHTML = R.photoCodes.map(p => `<div class="item"><div class="head"><span class="code">${p.code}</span><span class="name">${esc(p.name)}</span></div>${phBox(p.code)}</div>`).join('');
-    renderSite(); renderItems(); }
+    renderSite(); renderItems(); renderRemarks(); }
+  function renderRemarks(){ $('#remarkChips').innerHTML = chips(O.remarks, 'remark', $('#note').value || cur.note, 'remarks'); }
   function renderSite(){ const sn = O.siteNotes || {}; let done = 0;
-    $('#siteChecks').innerHTML = R.siteChecks.map(s => { const d = cur.site_[s.code] || {}; if(d.seen) done++; return `<div class="item"><div class="head"><span class="code">${s.code}</span><span class="name">${esc(s.name)}</span></div><div class="row"><label class="chk"><input type="checkbox" data-site="${s.code}|seen" ${d.seen ? 'checked' : ''}><span>已檢視</span></label><label class="chk"><input type="checkbox" data-site="${s.code}|shot" ${d.shot ? 'checked' : ''}><span>已拍照</span></label></div><div class="field">${chips(sn[s.code], `site|${s.code}|note`, d.note)}<input type="text" placeholder="說明（可補字）" data-site="${s.code}|note" value="${esc(d.note || '')}"></div>${phBox(s.code)}</div>`; }).join('');
+    $('#siteChecks').innerHTML = R.siteChecks.map(s => { const d = cur.site_[s.code] || (cur.site_[s.code] = {}); if(Object.values(cur.photos).some(p => p.code === s.code)){ d.shot = true; d.seen = true; } if(d.seen) done++; return `<div class="item"><div class="head"><span class="code">${s.code}</span><span class="name">${esc(s.name)}</span></div><div class="row"><label class="chk"><input type="checkbox" data-site="${s.code}|seen" ${d.seen ? 'checked' : ''}><span>已檢視</span></label><label class="chk"><input type="checkbox" data-site="${s.code}|shot" ${d.shot ? 'checked' : ''}><span>已拍照</span></label></div><div class="field">${chips(sn[s.code], `site|${s.code}|note`, d.note, `siteNotes/${s.code}`)}<input type="text" placeholder="說明（可補字）" data-site="${s.code}|note" value="${esc(d.note || '')}"></div>${phBox(s.code)}</div>`; }).join('');
     $('#siteBadge').textContent = done ? `已檢視 ${done}/7` : ''; }
-  function itemRow(i, scope){ const d = getObj(scope, i.code); const pos = scope === 'u' ? O.positionsIn : O.positionsOut; const gk = i.group || i.code; const dmg = (O.damage || {})[gk] || (O.damage || {})[i.code]; const fix = (O.fix || {})[gk] || (O.fix || {})[i.code]; const open = !!(d.rec || d.note || d.loc || d.dmg || d.fix); const g = {Y:'☑',N:'☒',Q:'？'}[d.rec] || '';
+  const REC = { Y:'建議申請', N:'暫不建議', Q:'待釐清' };
+  function itemRow(i, scope){ const d = getObj(scope, i.code); const pos = scope === 'u' ? O.positionsIn : O.positionsOut; const dk = (O.damage[i.code] && O.damage[i.code].length) ? i.code : (i.group || i.code); const dmg = O.damage[dk]; const fk = (O.fix[i.code] && O.fix[i.code].length) ? i.code : (i.group || i.code); const fix = O.fix[fk]; const open = !!(d.rec || d.note || d.loc || d.dmg || d.fix); const g = REC[d.rec] || '';
     return `<details ${open ? 'open' : ''}><summary><span><span class="code" style="color:var(--green-deep);font-weight:700;margin-right:6px">${i.code}</span>${esc(i.name)}</span><span class="badge">${g}</span></summary><div class="body">
-      <div class="tri-row"><span class="lbl">初判</span><div class="tri">${[['Y','☑'],['N','☒'],['Q','？']].map(([k,gl]) => `<button type="button" class="${d.rec===k ? 'on-'+k : ''}" data-rec="${scope}|${i.code}|${k}">${gl}</button>`).join('')}</div></div>
-      <div class="field"><label>位置</label>${chips(pos, `${scope}|${i.code}|loc`, d.loc)}<input type="text" placeholder="位置（可補字）" data-item="${scope}|${i.code}|loc" value="${esc(d.loc || '')}"></div>
-      <div class="field"><label>損壞情形</label>${chips(dmg, `${scope}|${i.code}|dmg`, d.dmg)}<input type="text" placeholder="損壞情形（可補字）" data-item="${scope}|${i.code}|dmg" value="${esc(d.dmg || '')}"></div>
-      <div class="field"><label>修復方式</label>${chips(fix, `${scope}|${i.code}|fix`, d.fix)}<input type="text" placeholder="修復方式（可補字）" data-item="${scope}|${i.code}|fix" value="${esc(d.fix || '')}"></div>
+      <div class="tri-row"><span class="lbl">初判</span><div class="tri">${['Y','N','Q'].map(k => `<button type="button" class="${d.rec===k ? 'on-'+k : ''}" data-rec="${scope}|${i.code}|${k}">${REC[k]}</button>`).join('')}</div></div>
+      <div class="field"><label>位置</label>${chips(pos, `${scope}|${i.code}|loc`, d.loc, scope === 'u' ? 'positionsIn' : 'positionsOut')}<input type="text" placeholder="位置（可補字）" data-item="${scope}|${i.code}|loc" value="${esc(d.loc || '')}"></div>
+      <div class="field"><label>損壞情形</label>${chips(dmg, `${scope}|${i.code}|dmg`, d.dmg, `damage/${dk}`)}<input type="text" placeholder="損壞情形（可補字）" data-item="${scope}|${i.code}|dmg" value="${esc(d.dmg || '')}"></div>
+      <div class="field"><label>修復方式</label>${chips(fix, `${scope}|${i.code}|fix`, d.fix, `fix/${fk}`)}<input type="text" placeholder="修復方式（可補字）" data-item="${scope}|${i.code}|fix" value="${esc(d.fix || '')}"></div>
       ${d.rec === 'Y' ? phBox(i.code) : ''}</div></details>`; }
   function renderItems(){ const t = R.items[cur.type]; const groups = {}; t.indoor.forEach(i => { (groups[i.group] = groups[i.group] || []).push(i); });
     $('#items').innerHTML = `<p class="hint" style="margin-top:4px">${cur.type === 'apt' ? '共用部分' : '室外'}</p>` + t.common.map(i => itemRow(i, 'c')).join('') +
@@ -498,11 +538,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   $('#btnCode').onclick = () => applyCode($('#codeIn').value);
 
   // ---- 案件清單 ----
-  $('#btnCases').onclick = async () => { const all = await dbAll(); const names = all.map(r => `${r.slug}　${r.data.applicant || ''}　${Object.keys(r.photos||{}).length} 張`); const pick = prompt('手機上的案件：\n' + (names.map((n,i)=>`${i+1}. ${n}`).join('\n') || '（無）') + '\n\n輸入編號開啟；輸入新案號建立；輸入「刪 編號」刪除', ''); if(pick === null || !pick.trim()) return; const m = pick.trim().match(/^刪\s*(\d+)$/); if(m){ const r = all[+m[1]-1]; if(r && confirm(`刪除手機上的 ${r.slug}？（桌機不受影響）`)){ await dbDel(r.slug); if(cur.slug === r.slug){ cur = blank(); photos = {}; renderAll(); } toast('已刪除'); } return; } const idx = +pick.trim(); await save(true); if(idx >= 1 && idx <= all.length) await load(all[idx-1].slug); else await load(pick.trim().toUpperCase()); };
+  async function openSheet(){ const all = (await dbAll()).sort((a,b) => (b.data.updatedAt||'').localeCompare(a.data.updatedAt||'')); $('#caseList').innerHTML = all.length ? all.map(r => `<div class="caseRow ${r.slug===cur.slug?'cur':''}"><div class="info"><b>${esc(r.slug)}</b><small>${esc(r.data.applicant||'')}　${Object.keys(r.photos||{}).length} 張　${(r.data.updatedAt||'').slice(5,16).replace('T',' ')}</small></div>${r.data.sentAt ? '<span class="tag sent">已傳</span>' : '<span class="tag">未傳</span>'}<button type="button" data-open="${esc(r.slug)}">開啟</button><button type="button" data-del="${esc(r.slug)}">刪除</button></div>`).join('') : '<p class="hint">手機上還沒有案件。按「＋ 新案」或用桌機案件碼帶入。</p>'; $('#caseSheet').classList.add('show'); }
+  $('#btnCases').onclick = openSheet; $('#btnCloseSheet').onclick = () => $('#caseSheet').classList.remove('show');
+  $('#btnNewCase').onclick = async () => { const s = prompt('新案號（例 YL115H20002）'); if(!s || !s.trim()) return; await save(true); await load(s.trim().toUpperCase()); await save(true); $('#caseSheet').classList.remove('show'); };
+  $('#caseList').addEventListener('click', async e => { const b = e.target.closest('button'); if(!b) return; if(b.dataset.open){ await save(true); await load(b.dataset.open); $('#caseSheet').classList.remove('show'); } if(b.dataset.del){ const r = await dbGet(b.dataset.del); if(!confirm(`刪除手機上的 ${b.dataset.del}${r?.data?.sentAt ? '' : '（尚未傳回桌機！）'}？桌機不受影響。`)) return; await dbDel(b.dataset.del); if(cur.slug === b.dataset.del){ cur = blank(); photos = {}; renderAll(); } openSheet(); } });
+
+  // ---- 片語匯出／匯入 ----
+  $('#btnOptExport').onclick = async () => { const txt = JSON.stringify(effectiveOptions(), null, 2); const file = new File([txt], 'options.json', { type:'application/json' }); try { if(navigator.canShare && navigator.canShare({ files:[file] })) await navigator.share({ files:[file], title:'options.json' }); else { await navigator.clipboard.writeText(txt); toast('已複製到剪貼簿'); } } catch(e){ if(e.name !== 'AbortError') toast('匯出失敗：' + e.message); } };
+  $('#btnOptImport').onclick = () => { const t = $('#optIn'); if(t.hidden){ t.hidden = false; t.focus(); $('#optHint').textContent = '貼上後再按一次「匯入片語」'; return; } try { const o = JSON.parse(t.value); let n = 0; Object.entries(o).forEach(([k, v]) => { if(Array.isArray(v)) v.forEach(p => { if(!optList(k).includes(p)){ addCustom(k, null, p); n++; } }); else if(v && typeof v === 'object') Object.entries(v).forEach(([sub, arr]) => (arr||[]).forEach(p => { if(!optList(k, sub).includes(p)){ addCustom(k, sub, p); n++; } })); }); t.hidden = true; t.value = ''; $('#optHint').textContent = `已併入 ${n} 條新片語`; renderAll(); } catch(e){ $('#optHint').textContent = 'JSON 讀不了：' + e.message; } };
+  $('#btnOptReset').onclick = () => { if(!confirm('清除這支手機上自訂的片語？規則表片語不受影響。')) return; CUSTOM = {}; saveCustom(); renderAll(); $('#optHint').textContent = '已清除自訂片語'; };
 
   // ---- 打包分享 ----
-  async function buildZip(){ readForm(); const zip = new JSZip(); const f = zip.folder(cur.slug); f.file('case.json', JSON.stringify(Object.assign({}, cur, { exportedAt:new Date().toISOString() }), null, 2)); const ph = f.folder('photos'); Object.entries(photos).forEach(([n, b]) => ph.file(n, b)); const blob = await zip.generateAsync({ type:'blob', compression:'STORE' }); return new File([blob], `${cur.slug}-現勘包.zip`, { type:'application/zip' }); }
-  async function share(){ if(!(await save(true))) return; try { const file = await buildZip(); $('#shareHint').textContent = `現勘包 ${Math.round(file.size/1024)} KB，${Object.keys(photos).length} 張照片`; if(navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title:file.name }); toast('已送出分享'); } else { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; a.click(); toast('這個瀏覽器不能分享檔案，改為下載'); } } catch(e){ if(e.name !== 'AbortError') toast('分享失敗：' + e.message); } }
+  async function buildZip(){ readForm(); const zip = new JSZip(); const f = zip.folder(cur.slug); f.file('case.json', JSON.stringify(Object.assign({}, cur, { exportedAt:new Date().toISOString() }), null, 2)); if(Object.keys(CUSTOM).length) f.file('options.json', JSON.stringify(CUSTOM, null, 2)); const ph = f.folder('photos'); Object.entries(photos).forEach(([n, b]) => ph.file(n, b)); const blob = await zip.generateAsync({ type:'blob', compression:'STORE' }); return new File([blob], `${cur.slug}-現勘包.zip`, { type:'application/zip' }); }
+  async function share(){ if(!(await save(true))) return; try { const file = await buildZip(); $('#shareHint').textContent = `現勘包 ${Math.round(file.size/1024)} KB，${Object.keys(photos).length} 張照片`; if(navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title:file.name }); cur.sentAt = new Date().toISOString(); await save(true); toast('已送出分享'); } else { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; a.click(); toast('這個瀏覽器不能分享檔案，改為下載'); } } catch(e){ if(e.name !== 'AbortError') toast('分享失敗：' + e.message); } }
   $('#btnShare').onclick = share; $('#btnShare2').onclick = share; $('#btnSave').onclick = () => save(false);
   window.ylohMobile = { buildZip, save, get cur(){ return cur; } };
 

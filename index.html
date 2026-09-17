@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>現勘傳輸測試</title>
+<title>老宅延壽 現勘</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現勘">
@@ -11,97 +11,349 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <style>
-  :root { --bg:#F6F3EE; --card:#FFFFFF; --ink:#2A2523; --muted:#6F6660; --line:#DDD5CC; --brick:#8B3A2F; --brick-ink:#FFFFFF; --ok:#2E7D4F; --warn:#B0731B; --bad:#A63A2E; --chip:#EFE8E0; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#1C1917; --card:#26221F; --ink:#F1ECE6; --muted:#A79E95; --line:#3B3531; --brick:#C9654F; --brick-ink:#1C1917; --ok:#6CC08B; --warn:#E0A44A; --bad:#E07A6A; --chip:#332D29; } }
-  :root[data-theme="dark"] { --bg:#1C1917; --card:#26221F; --ink:#F1ECE6; --muted:#A79E95; --line:#3B3531; --brick:#C9654F; --brick-ink:#1C1917; --ok:#6CC08B; --warn:#E0A44A; --bad:#E07A6A; --chip:#332D29; }
+  :root { --bg:#F6F3EE; --card:#FFFFFF; --ink:#2A2523; --muted:#6F6660; --line:#DDD5CC; --brick:#8B3A2F; --brick-ink:#FFFFFF; --ok:#2E7D4F; --warn:#B0731B; --bad:#A63A2E; --chip:#EFE8E0; --y:#DDF0E3; --n:#F6DAD5; --q:#F3E7C8; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1C1917; --card:#26221F; --ink:#F1ECE6; --muted:#A79E95; --line:#3B3531; --brick:#C9654F; --brick-ink:#1C1917; --ok:#6CC08B; --warn:#E0A44A; --bad:#E07A6A; --chip:#332D29; --y:#254634; --n:#4A2A25; --q:#4A3E22; } }
+  * { box-sizing:border-box; }
   html, body { height:100%; }
-  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 -apple-system, "PingFang TC", "Noto Sans TC", system-ui, sans-serif; -webkit-text-size-adjust:100%; }
-  .wrap { max-width:560px; margin:0 auto; padding-block:12px 40px; padding-inline:16px; display:flex; flex-direction:column; gap:14px; }
-  header { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
-  header h1 { font-size:20px; margin:0; letter-spacing:.02em; }
-  header small { color:var(--muted); font-size:12px; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 -apple-system, "PingFang TC", "Noto Sans TC", system-ui, sans-serif; -webkit-text-size-adjust:100%; padding-top:env(safe-area-inset-top,0px); }
+  header { position:sticky; top:0; z-index:5; background:var(--brick); color:var(--brick-ink); padding:10px 16px; padding-top:calc(10px + env(safe-area-inset-top,0px)); margin-top:calc(-1 * env(safe-area-inset-top,0px)); display:flex; align-items:center; gap:10px; }
+  header h1 { font-size:17px; margin:0; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  header small { opacity:.85; font-size:12px; display:block; font-weight:400; }
+  header button { width:auto; padding:8px 12px; background:rgba(255,255,255,.18); color:var(--brick-ink); border:0; font-size:14px; }
+  .wrap { max-width:600px; margin:0 auto; padding-block:12px 90px; padding-inline:16px; display:flex; flex-direction:column; gap:12px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; }
-  .card h2 { font-size:13px; margin:0; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
-  label { display:block; font-size:13px; color:var(--muted); margin-bottom:4px; }
-  input[type=text], textarea { width:100%; box-sizing:border-box; font:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:var(--bg); color:var(--ink); }
-  textarea { min-height:72px; resize:vertical; }
-  button { font:inherit; font-weight:600; padding:13px 16px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--ink); width:100%; }
+  .card h2 { font-size:13px; margin:0; color:var(--muted); letter-spacing:.06em; font-weight:600; display:flex; justify-content:space-between; align-items:center; }
+  .card h2 span.n { color:var(--brick); }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:3px; }
+  input[type=text], input[type=date], input[type=time], textarea, select { width:100%; font:inherit; padding:9px 11px; border:1px solid var(--line); border-radius:10px; background:var(--bg); color:var(--ink); }
+  textarea { min-height:56px; resize:vertical; }
+  button { font:inherit; font-weight:600; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--ink); width:100%; }
   button.primary { background:var(--brick); color:var(--brick-ink); border-color:var(--brick); }
-  button:disabled { opacity:.45; }
-  button:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px solid var(--brick); outline-offset:2px; }
-  .row { display:flex; gap:10px; }
-  .thumbs { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-  .thumbs figure { margin:0; position:relative; aspect-ratio:4/3; border-radius:8px; overflow:hidden; background:var(--chip); }
+  button.sm { width:auto; padding:7px 12px; font-size:14px; font-weight:500; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline:3px solid var(--brick); outline-offset:2px; }
+  .row { display:flex; gap:8px; align-items:center; } .row > * { flex:1; min-width:0; }
+  .chk { display:flex; align-items:center; gap:8px; font-size:15px; padding:6px 0; } .chk input { width:22px; height:22px; margin:0; accent-color:var(--brick); }
+  .item { border-top:1px solid var(--line); padding-top:10px; display:flex; flex-direction:column; gap:8px; }
+  .item:first-of-type { border-top:0; padding-top:0; }
+  .item .head { display:flex; align-items:center; gap:8px; }
+  .item .head .code { font-weight:700; font-variant-numeric:tabular-nums; min-width:44px; color:var(--brick); }
+  .item .head .name { flex:1; font-size:15px; }
+  .tri { display:inline-flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .tri button { width:44px; padding:8px 0; border:0; border-right:1px solid var(--line); border-radius:0; font-size:17px; background:var(--card); }
+  .tri button:last-child { border-right:0; }
+  .tri button.on-Y { background:var(--y); } .tri button.on-N { background:var(--n); } .tri button.on-Q { background:var(--q); }
+  .thumbs { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
+  .thumbs figure { margin:0; position:relative; flex:0 0 112px; aspect-ratio:4/3; border-radius:8px; overflow:hidden; background:var(--chip); }
   .thumbs img { width:100%; height:100%; object-fit:cover; display:block; }
-  .thumbs figcaption { position:absolute; left:0; right:0; bottom:0; font-size:11px; padding:2px 6px; background:rgba(0,0,0,.55); color:#fff; font-variant-numeric:tabular-nums; }
-  .thumbs button.x { position:absolute; top:4px; right:4px; width:26px; height:26px; padding:0; border-radius:50%; background:rgba(0,0,0,.6); color:#fff; border:0; font-size:14px; line-height:26px; }
-  .diag { display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:13px; font-variant-numeric:tabular-nums; }
-  .diag b { font-weight:600; }
-  .ok { color:var(--ok); } .warn { color:var(--warn); } .bad { color:var(--bad); }
-  .log { font-size:12px; color:var(--muted); white-space:pre-wrap; max-height:140px; overflow:auto; font-family:ui-monospace, Menlo, monospace; }
-  .steps { margin:0; padding-left:20px; font-size:14px; color:var(--muted); }
-  .steps li { margin-bottom:4px; }
-  .hint { font-size:13px; color:var(--muted); margin:0; }
+  .thumbs figcaption { position:absolute; left:0; right:0; bottom:0; font-size:10px; padding:2px 5px; background:rgba(0,0,0,.55); color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .thumbs button.x { position:absolute; top:3px; right:3px; width:24px; height:24px; padding:0; border-radius:50%; background:rgba(0,0,0,.6); color:#fff; border:0; font-size:14px; line-height:24px; }
+  .photobar { display:flex; gap:8px; align-items:center; } .photobar button { width:auto; padding:8px 12px; font-size:14px; } .photobar span { font-size:12px; color:var(--muted); }
+  details { border-top:1px solid var(--line); padding-top:8px; } details:first-of-type { border-top:0; padding-top:0; }
+  summary { cursor:pointer; font-weight:600; font-size:15px; padding:6px 0; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+  summary::-webkit-details-marker { display:none; }
+  summary .badge { font-size:12px; color:var(--muted); font-weight:500; }
+  summary::after { content:'＋'; color:var(--muted); } details[open] summary::after { content:'－'; }
+  details > .body { display:flex; flex-direction:column; gap:10px; padding:6px 0 10px; }
+  .hint { font-size:12px; color:var(--muted); margin:0; }
+  .bar { position:fixed; left:0; right:0; bottom:0; z-index:5; background:var(--card); border-top:1px solid var(--line); padding:10px 16px; padding-bottom:calc(10px + env(safe-area-inset-bottom,0px)); display:flex; gap:8px; }
+  .bar button { flex:1; }
+  .toast { position:fixed; left:16px; right:16px; bottom:calc(80px + env(safe-area-inset-bottom,0px)); z-index:6; background:var(--ink); color:var(--bg); padding:10px 14px; border-radius:10px; font-size:14px; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .toast.show { opacity:1; }
+  .env { font-size:12px; color:var(--muted); }
+  .env b.bad { color:var(--bad); }
+  .muted { color:var(--muted); }
+  .list { display:flex; flex-direction:column; gap:6px; }
+  .list .row { justify-content:space-between; } .list .row span { flex:1; }
 </style>
-
 </head>
 <body>
+<header>
+  <h1 id="hTitle">老宅延壽 現勘<small id="hSub">尚未載入案件</small></h1>
+  <button id="btnCases">案件</button>
+</header>
 <div class="wrap">
-  <header>
-    <h1>現勘傳輸測試</h1>
-    <small>第一輪・驗證用</small>
-  </header>
 
-  <div class="card">
-    <h2>環境</h2>
-    <div class="diag" id="diag"></div>
-    <p class="hint" id="installHint"></p>
-  </div>
-
-  <div class="card">
+  <div class="card" id="cardCase">
     <h2>案件</h2>
-    <div>
-      <label for="slug">案號</label>
-      <input type="text" id="slug" value="YL115H20001" autocapitalize="characters" autocomplete="off">
+    <div class="row">
+      <div><label for="slug">案號</label><input type="text" id="slug" autocapitalize="characters" autocomplete="off" placeholder="YL115H20001"></div>
+      <div><label for="type">類型</label><select id="type"><option value="house">透天住宅</option><option value="apt">公寓</option></select></div>
     </div>
-    <div>
-      <label for="note">現場備註</label>
-      <textarea id="note" placeholder="例：外牆磁磚剝落約 30 ㎡，屋頂漏水"></textarea>
+    <div class="row">
+      <div><label for="applicant">申請人</label><input type="text" id="applicant"></div>
+      <div style="flex:0 0 96px"><label for="floors">樓層</label><select id="floors"></select></div>
     </div>
+    <div><label for="addr">房屋地址</label><input type="text" id="addr" placeholder="羅東鎮中正路 5 號"></div>
+    <details>
+      <summary>從桌機帶入案件碼</summary>
+      <div class="body">
+        <p class="hint">桌機案件頁按「手機碼」會出現 QR 與一串文字。用相機掃 QR 會直接開這一頁並帶入；或把文字貼在下面。</p>
+        <textarea id="codeIn" placeholder="貼上案件碼"></textarea>
+        <button class="sm" id="btnCode">帶入</button>
+      </div>
+    </details>
+    <p class="env" id="env"></p>
   </div>
 
   <div class="card">
-    <h2>照片（自動裁 4:3、壓到 500KB）</h2>
+    <h2>現勘資訊</h2>
     <div class="row">
-      <button id="btnCam">拍照</button>
-      <button id="btnLib">從相簿選</button>
+      <div><label for="vDate">日期</label><input type="date" id="vDate"></div>
+      <div><label for="vTime">時間</label><input type="time" id="vTime"></div>
     </div>
-    <input type="file" id="cam" accept="image/*" capture="environment" hidden>
-    <input type="file" id="lib" accept="image/*" multiple hidden>
-    <div class="thumbs" id="thumbs"></div>
-    <p class="hint" id="photoHint">還沒有照片。</p>
+    <div><label for="vWith">會勘人員（多人用、分隔）</label><input type="text" id="vWith" list="members"></div>
+    <datalist id="members"></datalist>
+    <div><label for="vWeather">天候</label><input type="text" id="vWeather" list="weathers"></div>
+    <datalist id="weathers"></datalist>
+    <div class="list" id="onsite"></div>
+  </div>
+
+  <div class="card">
+    <h2>門牌、外觀、索引圖</h2>
+    <div id="basics"></div>
+  </div>
+
+  <div class="card">
+    <h2>七項勘查</h2>
+    <div id="siteChecks"></div>
+  </div>
+
+  <div class="card">
+    <h2>初判可補助項目 <span class="badge muted" id="itemsBadge"></span></h2>
+    <p class="hint">☑ 建議申請、☒ 暫不建議、？ 待釐清。展開需要的項目即可，其餘留白。</p>
+    <div id="items"></div>
+  </div>
+
+  <div class="card">
+    <h2>現場備註</h2>
+    <textarea id="note" placeholder="損壞情形、違章、要提醒桌機的事"></textarea>
   </div>
 
   <div class="card">
     <h2>傳回桌機</h2>
+    <p class="hint">打包成 zip（案號-現勘包.zip）→ 分享面板選 LINE 傳給自己或組長；桌機在「匯入現勘包」載入。LINE 檔案七天內要下載。</p>
     <button class="primary" id="btnShare">打包並分享現勘包</button>
-    <ol class="steps">
-      <li><b>方法 A</b>：分享面板選 <b>LINE</b> → 傳給自己或組長。</li>
-      <li><b>方法 B</b>：分享面板選 <b>儲存到檔案</b> → 之後從 LINE 的「＋」選檔案傳。</li>
-    </ol>
-    <p class="hint">兩種都試，各試三次，記下有沒有失敗。現勘包＝case.json＋photos/，zip。</p>
+    <p class="hint" id="shareHint"></p>
   </div>
 
-  <div class="card">
-    <h2>紀錄</h2>
-    <div class="log" id="log"></div>
-    <div class="row">
-      <button id="btnCopy">複製紀錄</button>
-      <button id="btnClear">清空這一案</button>
-    </div>
-  </div>
 </div>
+<div class="bar">
+  <button id="btnSave">儲存</button>
+  <button class="primary" id="btnShare2">分享現勘包</button>
+</div>
+<div class="toast" id="toast"></div>
 
+<script>
+// rules.js — 老宅延壽輔導組作業系統 規則表（「法條」：數字與清單全部集中在這裡）
+// 出處：因應國際情勢強化老舊建築物修繕補助辦法（115/4/2）、宜蘭縣政府 115/8/26 府建使字第 1150138397A 號公告、
+//       輔導組表單 ylohCG-Att00／01／02／11／12（YCAAform-V1150914、CGAnn 版）、115/9/11 專業場講義_02。
+// 改數字只改這裡；index.html 不寫死任何金額。標「待確認」者，Darren 向縣府確認後修正。
+window.RULES = {
+  version: "1.1 (2026-09-17)",
+  deadline: { year: "115", date: "2026-11-30T17:00:00+08:00", label: "115 年度受理截止 115/11/30 17:00", backupUntil: "115/12/18" },
+  ageThreshold: 30,                 // 屋齡門檻（辦法第 7、9 條）
+  ratio: 0.65,                      // 各單項補助不得超過工程經費 65%（辦法第 13 條）
+  facadeUnit: 3500,                 // 立面修繕每 ㎡ 補助（附表一、二備註）
+  indoorCap: 200000, indoorCapPlus: 300000,   // 室內項目每戶上限；符合第 13 條第 2 項加碼（辦法第 13 條）
+  apartmentFee: 10000, apartmentFeeExtra: 50000, // 公寓作業費／棟；加昇降設備或立面各再加（辦法第 16 條）
+  assessment: { prelim: 15000, prelimReview: 1000, detail: 400000, detailReview: 200000, note: "辦法第 6 條；講義另提 1.2／1.5 萬依樓地板面積——待確認" },
+
+  types: { apt: "公寓（4–6 樓）", house: "透天住宅（6 樓以下）" },
+  floors: { apt: [4, 5, 6], house: [1, 2, 3, 4, 5, 6] },
+
+  // 修繕項目：code 同時是照片檔名代碼。cap 為每棟上限；capByFloor 依樓層；indoor 為室內項目（每戶）
+  items: {
+    apt: {
+      common: [   // 辦法第 10 條第 1 項，附表一 2-1～2-8
+        { code: "EL", name: "增設昇降設備", cap: 4000000 },
+        { code: "ST", name: "樓梯間修繕", cap: 400000 },
+        { code: "PL", name: "公共管線修繕更新工程", cap: 500000 },
+        { code: "DM", name: "老舊招牌、違規物或違建拆除工程", cap: 400000 },
+        { code: "F",  name: "建築物立面修繕", cap: 3000000, perArea: true },
+        { code: "R",  name: "屋頂防水及隔熱工程", cap: 500000 },
+        { code: "AC", name: "外掛式空調及外部管線之安全改善工程", cap: 400000 },
+        { code: "BF", name: "增設或改善無障礙設施", cap: 400000 }
+      ],
+      indoorRequires: 3,   // 專有部分須共用部分申請 3 項以上（辦法第 10 條第 3 項）
+      indoor: [            // 辦法第 10 條第 2 項；細項依 Att11／12「三、初判可補助項目建議」；上限合計每戶 20 萬／加碼 30 萬
+        { code: "IN1a", group: "IN1", gname: "1.居家安全及無障礙設施設備修繕", name: "(1)扶手更新或加裝" },
+        { code: "IN1b", group: "IN1", name: "(2)高低差改善" },
+        { code: "IN1c", group: "IN1", name: "(3)門扇改善" },
+        { code: "IN1d", group: "IN1", name: "(4)地面防滑及防墜設施" },
+        { code: "IN2a", group: "IN2", gname: "2.管線修繕更新", name: "(1)給排水管線" },
+        { code: "IN2b", group: "IN2", name: "(2)電氣管線" },
+        { code: "IN2c", group: "IN2", name: "(3)燃氣管線" },
+        { code: "IN3",  group: "IN3", gname: "3.配合事項", name: "配合前 2 項所需之必要室內裝修" }
+      ]
+    },
+    house: {
+      common: [   // 辦法第 11 條第 1 項第 1–4 款，附表二 2-1～2-4
+        { code: "F",  name: "建築物立面修繕", capByFloor: { "1": 1000000, "2": 1000000, "3": 2000000, "4": 2000000, "5": 3000000, "6": 3000000 }, perArea: true },
+        { code: "R",  name: "屋頂防水及隔熱工程", cap: 200000 },
+        { code: "AC", name: "外掛式空調及外部管線之安全改善工程", cap: 50000 },
+        { code: "BF", name: "增設或改善室外無障礙設施", cap: 50000 }
+      ],
+      indoorRequires: 1,   // 室內須室外任 1 項以上（辦法第 11 條第 2 項）
+      indoor: [            // 辦法第 10 條第 2 項；細項依 Att11／12「三、初判可補助項目建議」；上限合計每戶 20 萬／加碼 30 萬
+        { code: "IN1a", group: "IN1", gname: "1.居家安全及無障礙設施設備修繕", name: "(1)扶手更新或加裝" },
+        { code: "IN1b", group: "IN1", name: "(2)高低差改善" },
+        { code: "IN1c", group: "IN1", name: "(3)門扇改善" },
+        { code: "IN1d", group: "IN1", name: "(4)地面防滑及防墜設施" },
+        { code: "IN2a", group: "IN2", gname: "2.管線修繕更新", name: "(1)給排水管線" },
+        { code: "IN2b", group: "IN2", name: "(2)電氣管線" },
+        { code: "IN2c", group: "IN2", name: "(3)燃氣管線" },
+        { code: "IN3",  group: "IN3", gname: "3.配合事項", name: "配合前 2 項所需之必要室內裝修" }
+      ]
+    }
+  },
+
+  // 戶籍成員要件（辦法第 13 條第 2 項）：公寓共用部分＝資格要件；透天、公寓專有部分＝加碼要件
+  household: [
+    { code: "H65", name: "年滿 65 歲以上", doc: "戶籍謄本（必要）或戶口名簿" },
+    { code: "HLOW", name: "低收入戶或中低收入戶", doc: "低收／中低收證明影本（縣府查核）" },
+    { code: "HLTC", name: "長照需要等級第 2 級以上且符合居家無障礙改善對象", doc: "縣府長期照護服務管理所核定文件（縣府查核）" }
+  ],
+
+  // 優先序積分（公告第三項），各 1 分
+  priority: [
+    { code: "P1", name: "戶籍成員符合第 13 條第 2 項各款之一", auto: "household" },
+    { code: "P2", name: "原外牆磁磚剝落，並申請立面修繕", auto: "tileF" },
+    { code: "P3", name: "申請加裝屋頂或立面型太陽能光電板" },
+    { code: "P4", name: "提供做為包租代管社會住宅（附契約，租約有效期內）" },
+    { code: "P5", name: "透天連棟式 3 棟以上共同申請，達街廓整體改善效益" },
+    { code: "P6", name: "公寓申請補助項目超過 4 項／透天室外超過 2 項", auto: "count" }
+  ],
+  priorityCount: { apt: 4, house: 2 },   // 「超過」→ 嚴格大於
+
+  // 講義_02 第 15 頁 現場勘查七項（code 同時是照片檔名代碼）
+  siteChecks: [
+    { code: "S1", name: "建築基地（建築線）範圍（電梯、室外無障礙通路）" },
+    { code: "S2", name: "增設昇降設備位置" },
+    { code: "S3", name: "合法建築物範圍（屋頂）" },
+    { code: "S4", name: "合法建築物範圍（外牆）" },
+    { code: "S5", name: "申請立面修繕之外牆範圍" },
+    { code: "S6", name: "申請屋頂防水隔熱修繕之屋頂範圍" },
+    { code: "S7", name: "其他" }
+  ],
+
+  // 資格檢核（需求申請表第 3 頁，由服務團隊填寫）
+  checklist: [
+    { code: "C1", name: "是否為合法建築物", hint: "使用執照字號／近 3 個月建物登記謄本（一或三類）" },
+    { code: "C2", name: "申請人資格", hint: "公寓：管委會、管理負責人或全體推派代表人；透天：單一所有權人（自然人）或多人推派代表人" },
+    { code: "C3", name: "屋齡 30 年以上", hint: "以完工日期計" },
+    { code: "C4", name: "建築物樓層", hint: "公寓 4–6 樓；透天 1–6 樓" },
+    { code: "C5", name: "住宅使用比率", hint: "公寓：住宅面積或戶數達 1/2；透天：全棟住宅" },
+    { code: "C6", name: "戶籍成員要件", hint: "公寓共用部分申請之資格要件；透天為加碼要件", aptOnly: true },
+    { code: "C7", name: "結構安全性能評估情形", hint: "已完成初步或詳細評估" },
+    { code: "C8", name: "申請修繕補助項目符合辦法", hint: "室外／室內項目與連動條件" },
+    { code: "C9", name: "無不得申請情形", hint: "單一所有權人全棟（公寓）、已申請建照／拆照、都更或重建程序、同項目已獲他補助（公告六（二））" }
+  ],
+
+  // 應備文件（辦法第 14、15 條；講義_02 第 4、5、7 頁）
+  documents: {
+    common: [
+      "近 3 個月內建物登記第一類或第三類謄本",
+      "使用執照影本（無者：公所／縣府合法房屋證明或完工證明）",
+      "使照竣工平面圖、立面圖或建物測量成果圖（皆無：建築師簽證現況實測圖）",
+      "結構安全性能評估報告書影本",
+      "施工廠商簽約證明（契約書影本或報價單，載明廠商、簽約日期、主要建材品牌）",
+      "未曾受補助切結書",
+      "戶籍要件證明（戶籍謄本／低收證明／長照核定文件）"
+    ],
+    apt: [
+      "管委會報備證明＋管理負責人名冊【附件 1】＋區分所有權人會議紀錄（以管委會申請）",
+      "代表人名冊【附件 1】＋選定代表人委託書【附件 2】＋身分證影本（以共同代表人申請）",
+      "委託專業者委託書【附件 6】（委託個人 NG）"
+    ],
+    house: [
+      "身分證明文件影本（產權單一）",
+      "名冊【附件 1】／選定代表人委託書【附件 2】／全體所有權人同意修繕證明【附件 3】（產權共有，3 選 1）",
+      "委託專業者委託書【附件 6】（委託個人 NG）"
+    ]
+  },
+
+  // 其他補助（Att01／02／11／12）
+  otherAid: [
+    { code: "PV", name: "家戶設置屋頂太陽光電加速計畫補助（經濟部；附件 A，轉介工商旅遊處）" },
+    { code: "LTC", name: "符合長照需要等級第 2 級以上者，申請長照輔具及居家無障礙環境改善服務補助（衛福部；附件 B）" }
+  ],
+
+  // 四、後續申請提醒事項（Att11／12；Att00 序次 7）
+  reminders: [
+    "申請時程：至 115 年 11 月 30 日止",
+    "申請程序（非先送件先核准，有補助順序之審核，依縣府准駁為準）",
+    "計畫書填寫及應檢附文件（除結構評估圖面外，建議補充竣工圖面積計算表與立面圖，逕向縣府建管科或公所申請）",
+    "建議委託專業者辦理整合協調、專業評估、協助提案等說明",
+    "其他"
+  ],
+
+  // Att00 序次 1／3／6：事前作業與現場程序檢核（系統內部提醒，不印在評估表）
+  procedure: {
+    pre: [
+      "輔導組派案後，領取「修繕需求申請書（含附件）」並登錄編號",
+      "檢核需求申請書上之申請項目與檢附文件是否符合申請資格",
+      "查詢建築物位址（地籍圖資網路便民服務系統）",
+      "依現有資料或圖面檢核合法建築範圍",
+      "填寫評估紀錄表「一、基本資料」"
+    ],
+    onsite: [
+      "攜帶公會會員證，表明「老宅延壽輔導團成員」",
+      "向申請人表述本項服務不收費",
+      "不承諾承攬本案之規劃設計、計畫申請或工程（避免裁判兼球員）；可引薦本會有意願之建築師",
+      "對照使照竣工圖（平面、立面）、測量成果圖或開業建築師簽證圖面，敘明非合法範圍不予補助"
+    ],
+    mapUrl: "https://easymap.land.moi.gov.tw/W10Web/Normal"
+  },
+
+  // 前置作業應備文件自主檢核表（Att01／02 第 2 頁；由申請人自主勾選）
+  selfCheck: {
+    house: ["身分證正反面影本（申請人）", "透天住宅多人持有產權 選定代表人同意書", "建物第一類謄本", "使用執照存根", "使用執照竣工圖", "建物測量成果圖", "使用分區證明", "建築物結構安全性能評估"],
+    apt: ["公寓大廈管理委員會報備證明或管理負責人身分證明文件、管理負責人名冊", "全體區分所有權人同意推派代表人 身分證明文件、同意委託書及全體所有權人名冊", "建物第一類謄本", "使用執照存根", "使用執照竣工圖", "建物測量成果圖", "使用分區證明", "建築物結構安全性能評估"]
+  },
+
+  // 照片代碼（Att00 序次 8、9）：MAP 照片索引圖／修繕位置簡圖；DR 門牌；EX 外觀立面；其餘同修繕項目與 S1–S7
+  photoCodes: [
+    { code: "MAP", name: "照片索引圖／修繕位置簡圖" },
+    { code: "DR", name: "門牌號碼" },
+    { code: "EX", name: "外觀立面" }
+  ],
+  photo: { ratio: "4:3", maxKB: 500, wCm: 7.2, hCm: 5.0, perPage: 8, maxCount: 16 },
+
+  // 案號：YL + 民國年三碼 + 類型碼 + 鄉鎮碼 + 四碼流水；前置碼隨階段換（C 諮詢／D 需求申請／P 現地評估）
+  caseNo: { prefix: "YL", typeCode: { house: "H", apt: "A" }, stagePrefix: { "諮詢中": "YLC", "需求表已填": "YLD", "已派案": "YLD", "已現勘": "YLP", "檢核完成": "YLP", "已轉正式申請": "YLP" } },
+  // 宜蘭縣鄉鎮市一碼對照（Claude 擬：市→鎮→鄉依縣府慣例排序；若公會或縣府有官方代碼請整表替換）
+  towns: [
+    { code: "1", name: "宜蘭市" }, { code: "2", name: "羅東鎮" }, { code: "3", name: "蘇澳鎮" }, { code: "4", name: "頭城鎮" },
+    { code: "5", name: "礁溪鄉" }, { code: "6", name: "壯圍鄉" }, { code: "7", name: "員山鄉" }, { code: "8", name: "冬山鄉" },
+    { code: "9", name: "五結鄉" }, { code: "A", name: "三星鄉" }, { code: "B", name: "大同鄉" }, { code: "C", name: "南澳鄉" }
+  ],
+  counties: ["宜蘭縣","基隆市","臺北市","新北市","桃園市","新竹市","新竹縣","苗栗縣","臺中市","彰化縣","南投縣","雲林縣","嘉義市","嘉義縣","臺南市","高雄市","屏東縣","花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"],
+
+  // 選項類清單（使用者可在系統內新增／修改／刪除，存瀏覽器並可匯出 options.json；這裡是預設值）
+  options: {
+    weather: ["晴", "多雲", "陰", "小雨", "大雨", "颱風前後"],
+    positionsOut: ["全棟", "正面", "背面", "左側", "右側", "屋頂", "頂樓", "1樓", "2樓", "3樓", "4樓", "5樓", "6樓", "樓梯間", "騎樓", "陽台", "其他"],
+    positionsIn: ["全戶", "客廳", "餐廳", "廚房", "浴廁", "主臥", "臥室", "走道", "樓梯", "陽台", "1樓", "2樓", "3樓", "4樓", "5樓", "6樓", "其他"],
+    ageNotes: ["依使用執照", "依建物謄本", "依完工證明", "申請人自述", "待查"],
+    floorsNotes: ["依使用執照", "依建物謄本", "含頂樓加蓋", "含夾層", "待查"],
+    // 結構評估機構：國土署「都市危險及老舊建築物結構安全性能評估共同供應契約機構」名冊 32 家（宜蘭縣建築師公會置頂）
+    assessOrgs: ["宜蘭縣建築師公會", "台北市結構工程工業技師公會", "台北市土木技師公會", "社團法人臺灣省土木技師公會", "社團法人新北市結構工程技師公會", "高雄市結構工程工業技師公會", "臺中市結構工程技師公會", "台灣省結構工程技師公會", "社團法人中華民國建築技術學會", "社團法人桃園市土木技師公會", "社團法人新北市土木技師公會", "社團法人臺中市土木技師公會", "高雄市土木技師公會", "台南市結構工程技師公會", "臺北市建築師公會", "社團法人新北市建築師公會", "社團法人南投縣建築師公會", "桃園市結構工程技師公會", "社團法人高雄市建築師公會", "社團法人基隆市建築師公會", "社團法人臺灣建築發展學會", "社團法人苗栗縣建築師公會", "社團法人臺中市建築師公會", "社團法人臺南市建築師公會", "社團法人新竹縣建築師公會", "社團法人彰化縣建築師公會", "桃園市建築師公會", "社團法人台南市土木技師公會", "花蓮縣建築師公會", "財團法人聯合營建發展基金會", "社團法人新竹市建築師公會", "社團法人中華建築公共安全學會"],
+    docTags: ["整合附件 PDF（全部）", "身分證明文件", "建物登記謄本", "使用執照存根", "使用執照竣工圖", "建物測量成果圖", "使用分區證明", "結構安全性能評估報告", "選定代表人同意書", "管委會報備證明／區權會紀錄", "其他"]
+  },
+  // 文件類別 → 自動勾「應備文件」（以 documents 文字關鍵字對應）
+  docTagMap: { "建物登記謄本": "謄本", "使用執照存根": "使用執照", "使用執照竣工圖": "竣工", "建物測量成果圖": "竣工", "結構安全性能評估報告": "結構安全", "身分證明文件": "身分證明", "選定代表人同意書": "委託書", "管委會報備證明／區權會紀錄": "管委會" },
+
+  // 輔導組組員名單（分派單下拉；可自由輸入不在名單者）。請 Darren 從公會名冊複製填入，不要用 AI 產生的名字
+  mobileUrl: "https://chidi57arch.github.io/yloh-mobile/",   // 手機現勘版網址（手機碼 QR 用；搬伺服器時改這裡）
+  members: [],
+
+  // 登入頁招呼語（理事長的話等）。請 Darren 貼入原文；留空則顯示系統預設提醒
+  greeting: "",
+
+  contacts: { hotline: "03-9255802", mail: "oldhouseyilan@gmail.com", site: "http://114.32.184.31:5560/" }
+};
+
+</script>
 <script>
 /*!
 
@@ -119,57 +371,76 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 </script>
 <script>
 (function(){
-  const $ = s => document.querySelector(s);
-  const logEl = $('#log'); const lines = [];
-  function log(m){ const t = new Date().toTimeString().slice(0,8); lines.push(`${t} ${m}`); logEl.textContent = lines.slice(-40).join('\n'); logEl.scrollTop = logEl.scrollHeight; }
+  const R = window.RULES; const $ = s => document.querySelector(s); const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  let toastT; function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200); }
 
-  // ---- 環境診斷 ----
-  const ua = navigator.userAgent; const ios = /iPhone|iPad/.test(ua); const m = ua.match(/OS (\d+)_(\d+)/); const iosVer = m ? `${m[1]}.${m[2]}` : '—';
-  const standalone = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
-  const canShare = !!navigator.share; let canShareFiles = false;
-  try { canShareFiles = !!(navigator.canShare && navigator.canShare({ files:[ new File(['x'], 'x.zip', { type:'application/zip' }) ] })); } catch(e){}
-  const rows = [
-    ['裝置', ios ? `iOS ${iosVer}` : ua.slice(0,40)],
-    ['已加入主畫面', standalone ? ['是','ok'] : ['否（在 Safari 裡）','warn']],
-    ['分享功能', canShare ? ['有','ok'] : ['無','bad']],
-    ['分享檔案', canShareFiles ? ['可以','ok'] : ['不行','bad']],
-    ['本機儲存', 'indexedDB' in window ? ['有','ok'] : ['無','bad']],
-    ['JSZip', typeof JSZip !== 'undefined' ? ['已載入','ok'] : ['沒載到','bad']],
-  ];
-  $('#diag').innerHTML = rows.map(([k,v]) => Array.isArray(v) ? `<span>${k}</span><b class="${v[1]}">${v[0]}</b>` : `<span>${k}</span><b>${v}</b>`).join('');
-  $('#installHint').textContent = standalone ? '以 App 模式執行。' : 'Safari：按下方「分享」→「加入主畫面」，之後從主畫面開，儲存才穩。';
-  if(navigator.storage && navigator.storage.persist){ navigator.storage.persist().then(p => log('儲存持久化：' + (p ? '已授予' : '未授予（Safari 常見，靠加入主畫面）'))).catch(()=>{}); }
+  // ---- 儲存：IndexedDB，一案一筆 { slug, data, photos:{name:blob} } ----
+  let db; const openDb = () => new Promise((res, rej) => { const r = indexedDB.open('yloh-mobile', 2); r.onupgradeneeded = () => { const d = r.result; if(!d.objectStoreNames.contains('cases')) d.createObjectStore('cases', { keyPath:'slug' }); }; r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const tx = (mode, fn) => new Promise((res, rej) => { const t = db.transaction('cases', mode); const r = fn(t.objectStore('cases')); t.oncomplete = () => res(r && r.result); t.onerror = () => rej(t.error); });
+  const dbPut = rec => tx('readwrite', s => s.put(rec)); const dbGet = slug => tx('readonly', s => s.get(slug)); const dbAll = () => tx('readonly', s => s.getAll()); const dbDel = slug => tx('readwrite', s => s.delete(slug));
 
-  // ---- IndexedDB：一案一筆 { slug, note, photos:[{name, blob}] } ----
-  let db;
-  function openDb(){ return new Promise((res, rej) => { const r = indexedDB.open('yloh-mobile', 1); r.onupgradeneeded = () => r.result.createObjectStore('cases', { keyPath:'slug' }); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
-  function put(rec){ return new Promise((res, rej) => { const tx = db.transaction('cases','readwrite'); tx.objectStore('cases').put(rec); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
-  function get(slug){ return new Promise((res, rej) => { const tx = db.transaction('cases'); const r = tx.objectStore('cases').get(slug); r.onsuccess = () => res(r.result || null); r.onerror = () => rej(r.error); }); }
-  function del(slug){ return new Promise((res, rej) => { const tx = db.transaction('cases','readwrite'); tx.objectStore('cases').delete(slug); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+  function blank(){ return { mobile:true, ver:R.version, slug:'', type:'house', applicant:'', addrText:'', floors:'2', visitDate: new Date().toISOString().slice(0,10), visitTime: new Date().toTimeString().slice(0,5), visitWith:'', visitWeather:'', onsite:{}, site_:{}, items:{}, unitItems:{}, photos:{}, note:'' }; }
+  let cur = blank(); let photos = {}; let urls = {};
+  function url(n){ if(!urls[n] && photos[n]) urls[n] = URL.createObjectURL(photos[n]); return urls[n] || ''; }
 
-  let cur = { slug:'YL115H20001', note:'', photos:[] };
-  async function load(){ try { db = await openDb(); const r = await get($('#slug').value.trim().toUpperCase()); if(r){ cur = r; $('#note').value = cur.note || ''; log(`載回 ${cur.slug}：${cur.photos.length} 張`); } else { cur = { slug:$('#slug').value.trim().toUpperCase(), note:'', photos:[] }; } render(); } catch(e){ log('本機儲存開啟失敗：' + e.message); } }
-  async function save(){ cur.slug = $('#slug').value.trim().toUpperCase(); cur.note = $('#note').value; try { await put(cur); } catch(e){ log('存檔失敗：' + e.message); } }
+  async function save(quiet){ readForm(); if(!cur.slug){ if(!quiet) toast('先填案號'); return false; } try { await dbPut({ slug:cur.slug, data:cur, photos }); if(!quiet) toast('已儲存在手機'); return true; } catch(e){ toast('儲存失敗：' + e.message); return false; } }
+  async function load(slug){ const r = await dbGet(slug); Object.values(urls).forEach(u => URL.revokeObjectURL(u)); urls = {}; if(r){ cur = Object.assign(blank(), r.data); photos = r.photos || {}; } else { cur = blank(); cur.slug = slug; photos = {}; } renderAll(); }
 
-  function render(){ const t = $('#thumbs'); t.innerHTML = ''; cur.photos.forEach((p, i) => { const f = document.createElement('figure'); const img = document.createElement('img'); img.src = URL.createObjectURL(p.blob); img.alt = p.name; const c = document.createElement('figcaption'); c.textContent = `${p.name}  ${Math.round(p.blob.size/1024)}KB`; const x = document.createElement('button'); x.className = 'x'; x.textContent = '×'; x.setAttribute('aria-label','移除'); x.onclick = async () => { cur.photos.splice(i,1); await save(); render(); }; f.append(img, c, x); t.appendChild(f); }); $('#photoHint').textContent = cur.photos.length ? `${cur.photos.length} 張，合計 ${Math.round(cur.photos.reduce((a,p)=>a+p.blob.size,0)/1024)}KB` : '還沒有照片。'; }
+  // ---- 表單 ↔ 資料 ----
+  function readForm(){ cur.slug = $('#slug').value.trim().toUpperCase(); cur.type = $('#type').value; cur.applicant = $('#applicant').value; cur.floors = $('#floors').value; cur.addrText = $('#addr').value; cur.visitDate = $('#vDate').value; cur.visitTime = $('#vTime').value; cur.visitWith = $('#vWith').value; cur.visitWeather = $('#vWeather').value; cur.note = $('#note').value; }
+  function fillForm(){ $('#slug').value = cur.slug; $('#type').value = cur.type; renderFloors(); $('#floors').value = cur.floors; $('#applicant').value = cur.applicant; $('#addr').value = cur.addrText; $('#vDate').value = cur.visitDate; $('#vTime').value = cur.visitTime; $('#vWith').value = cur.visitWith; $('#vWeather').value = cur.visitWeather; $('#note').value = cur.note; $('#hSub').textContent = cur.slug ? `${cur.slug}　${cur.applicant || ''}` : '尚未載入案件'; }
+  function renderFloors(){ $('#floors').innerHTML = R.floors[cur.type].map(f => `<option value="${f}">${f} 樓</option>`).join(''); }
+  $('#type').addEventListener('change', () => { cur.type = $('#type').value; cur.floors = String(R.floors[cur.type][0]); renderFloors(); $('#floors').value = cur.floors; renderItems(); });
+  $('#slug').addEventListener('change', async () => { const s = $('#slug').value.trim().toUpperCase(); if(s && s !== cur.slug){ await save(true); await load(s); } });
+  ['#applicant','#addr','#vDate','#vTime','#vWith','#vWeather','#note','#floors'].forEach(s => $(s).addEventListener('change', () => save(true)));
 
-  // ---- 照片處理：裁 4:3、1024×768、≤500KB ----
-  function processImage(file){ return new Promise((res, rej) => { const img = new Image(); img.onload = () => { const W = 1024, H = 768; const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); let sw = img.naturalWidth, sh = img.naturalHeight, sx = 0, sy = 0; if(sw/sh > 4/3){ const nw = sh*4/3; sx = (sw-nw)/2; sw = nw; } else { const nh = sw*3/4; sy = (sh-nh)/2; sh = nh; } g.drawImage(img, sx, sy, sw, sh, 0, 0, W, H); URL.revokeObjectURL(img.src); let q = 0.9; const step = () => c.toBlob(b => { if(!b) return rej(new Error('toBlob 失敗')); if(b.size <= 500*1024 || q <= 0.4) res(b); else { q -= 0.1; step(); } }, 'image/jpeg', q); step(); }; img.onerror = () => rej(new Error('讀不了這張圖（' + (file.type || '未知格式') + '）')); img.src = URL.createObjectURL(file); }); }
-  async function addFiles(files){ for(const f of files){ try { const t0 = Date.now(); const blob = await processImage(f); const n = cur.photos.length + 1; cur.photos.push({ name:`${cur.slug}-EX-${String(n).padStart(2,'0')}.jpg`, blob }); log(`照片 ${f.name || '(相機)'} ${f.type || '?'} ${Math.round(f.size/1024)}KB → ${Math.round(blob.size/1024)}KB，${Date.now()-t0}ms`); } catch(e){ log('照片失敗：' + e.message); } } await save(); render(); }
-  $('#btnCam').onclick = () => $('#cam').click(); $('#btnLib').onclick = () => $('#lib').click();
-  $('#cam').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; }; $('#lib').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
-  $('#slug').addEventListener('change', load); $('#note').addEventListener('input', save);
+  // ---- 照片 ----
+  function processImage(file){ return new Promise((res, rej) => { const img = new Image(); img.onload = () => { const W = 1024, H = 768; const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); let sw = img.naturalWidth, sh = img.naturalHeight, sx = 0, sy = 0; if(sw/sh > 4/3){ const nw = sh*4/3; sx = (sw-nw)/2; sw = nw; } else { const nh = sw*3/4; sy = (sh-nh)/2; sh = nh; } g.drawImage(img, sx, sy, sw, sh, 0, 0, W, H); URL.revokeObjectURL(img.src); let q = 0.9; const step = () => c.toBlob(b => { if(!b) return rej(new Error('toBlob 失敗')); if(b.size <= R.photo.maxKB*1024 || q <= 0.4) res(b); else { q -= 0.1; step(); } }, 'image/jpeg', q); step(); }; img.onerror = () => rej(new Error('讀不了這張圖')); img.src = URL.createObjectURL(file); }); }
+  async function addPhotos(code, files){ readForm(); if(!cur.slug){ toast('先填案號'); return; } let seq = Object.keys(photos).filter(n => n.startsWith(`${cur.slug}-${code}-`)).length; for(const f of files){ try { const blob = code === 'MAP' ? f : await processImage(f); seq++; const name = `${cur.slug}-${code}-${String(seq).padStart(2,'0')}.${code==='MAP' ? (f.name.split('.').pop() || 'jpg') : 'jpg'}`; photos[name] = blob; cur.photos[name] = { code, caption:'' }; } catch(e){ toast(e.message); } } await save(true); renderAll(); }
+  function pick(code, camera){ const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; if(camera) i.capture = 'environment'; else i.multiple = code !== 'MAP'; i.onchange = () => addPhotos(code, [...i.files]); i.click(); }
+  function removePhoto(n){ if(!confirm('移除這張照片？')) return; delete photos[n]; delete cur.photos[n]; if(urls[n]){ URL.revokeObjectURL(urls[n]); delete urls[n]; } save(true); renderAll(); }
+  function phBox(code){ const names = Object.keys(photos).filter(n => cur.photos[n]?.code === code).sort(); return `<div class="photobar"><button type="button" data-cam="${code}">拍照</button><button type="button" data-lib="${code}">相簿</button><span>${names.length} 張</span></div>` + (names.length ? `<div class="thumbs">${names.map(n => `<figure><img src="${url(n)}" alt="${esc(n)}"><figcaption>${esc(n.replace(cur.slug+'-',''))}</figcaption><button type="button" class="x" data-x="${esc(n)}" aria-label="移除">×</button></figure>`).join('')}</div>` : ''); }
+  document.addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; if(b.dataset.cam) pick(b.dataset.cam, true); else if(b.dataset.lib) pick(b.dataset.lib, false); else if(b.dataset.x) removePhoto(b.dataset.x); else if(b.dataset.rec){ const [scope, code, v] = b.dataset.rec.split('|'); const o = scope === 'u' ? cur.unitItems : cur.items; const d = o[code] || (o[code] = {}); d.rec = d.rec === v ? '' : v; save(true); renderItems(); } });
+  document.addEventListener('change', e => { const t = e.target; if(t.dataset.site){ const [code, k] = t.dataset.site.split('|'); const d = cur.site_[code] || (cur.site_[code] = {}); d[k] = t.type === 'checkbox' ? t.checked : t.value; save(true); } if(t.dataset.item){ const [scope, code, k] = t.dataset.item.split('|'); const o = scope === 'u' ? cur.unitItems : cur.items; const d = o[code] || (o[code] = {}); d[k] = t.value; save(true); } if(t.dataset.onsite !== undefined){ cur.onsite[t.dataset.onsite] = t.checked; save(true); } if(t.dataset.cap){ cur.photos[t.dataset.cap].caption = t.value; save(true); } });
 
-  // ---- 打包與分享 ----
-  async function buildZip(){ const zip = new JSZip(); const folder = zip.folder(cur.slug); folder.file('case.json', JSON.stringify({ slug:cur.slug, mobile:true, exportedAt:new Date().toISOString(), note:cur.note, photos:cur.photos.map(p=>({ name:p.name, code:'EX' })) }, null, 2)); const ph = folder.folder('photos'); cur.photos.forEach(p => ph.file(p.name, p.blob)); const blob = await zip.generateAsync({ type:'blob', compression:'STORE' }); return new File([blob], `${cur.slug}-現勘包.zip`, { type:'application/zip' }); }
-  $('#btnShare').onclick = async () => { await save(); try { const t0 = Date.now(); const file = await buildZip(); log(`打包 ${Math.round(file.size/1024)}KB，${Date.now()-t0}ms`); if(!navigator.share){ log('這個瀏覽器沒有分享功能'); return; } if(navigator.canShare && !navigator.canShare({ files:[file] })){ log('分享功能不接受檔案'); return; } await navigator.share({ files:[file], title:file.name }); log('分享面板已完成（使用者選了目標或取消）'); } catch(e){ log('分享失敗：' + e.name + ' ' + e.message); } };
+  // ---- 畫面 ----
+  function renderAll(){ fillForm(); $('#members').innerHTML = (R.members || []).map(m => `<option value="${esc(m)}">`).join(''); $('#weathers').innerHTML = (R.options.weather || []).map(m => `<option value="${esc(m)}">`).join('');
+    $('#onsite').innerHTML = R.procedure.onsite.map((t, i) => `<label class="chk"><input type="checkbox" data-onsite="${i}" ${cur.onsite[i] ? 'checked' : ''}><span>${esc(t)}</span></label>`).join('');
+    $('#basics').innerHTML = R.photoCodes.map(p => `<div class="item"><div class="head"><span class="code">${p.code}</span><span class="name">${esc(p.name)}</span></div>${phBox(p.code)}</div>`).join('');
+    $('#siteChecks').innerHTML = R.siteChecks.map(s => { const d = cur.site_[s.code] || {}; return `<div class="item"><div class="head"><span class="code">${s.code}</span><span class="name">${esc(s.name)}</span></div><div class="row"><label class="chk"><input type="checkbox" data-site="${s.code}|seen" ${d.seen ? 'checked' : ''}><span>已檢視</span></label><label class="chk"><input type="checkbox" data-site="${s.code}|shot" ${d.shot ? 'checked' : ''}><span>已拍照</span></label></div><input type="text" placeholder="說明" data-site="${s.code}|note" value="${esc(d.note || '')}">${phBox(s.code)}</div>`; }).join('');
+    renderItems(); }
+  function itemRow(i, scope){ const o = scope === 'u' ? cur.unitItems : cur.items; const d = o[i.code] || {}; const pos = scope === 'u' ? R.options.positionsIn : R.options.positionsOut; const open = !!(d.rec || d.note || d.loc);
+    return `<details ${open ? 'open' : ''}><summary><span><span class="code" style="color:var(--brick);font-weight:700;margin-right:6px">${i.code}</span>${esc(i.name)}</span><span class="badge">${{Y:'☑',N:'☒',Q:'？'}[d.rec] || ''}</span></summary><div class="body"><div class="tri">${[['Y','☑'],['N','☒'],['Q','？']].map(([k,g]) => `<button type="button" class="${d.rec===k ? 'on-'+k : ''}" data-rec="${scope}|${i.code}|${k}">${g}</button>`).join('')}</div><input type="text" list="pos-${scope}" placeholder="位置" data-item="${scope}|${i.code}|loc" value="${esc(d.loc || '')}"><input type="text" placeholder="損壞情形／修復方式" data-item="${scope}|${i.code}|note" value="${esc(d.note || '')}">${d.rec === 'Y' ? phBox(i.code) : ''}</div></details>`; }
+  function renderItems(){ const t = R.items[cur.type]; const groups = {}; t.indoor.forEach(i => { (groups[i.group] = groups[i.group] || []).push(i); });
+    $('#items').innerHTML = `<datalist id="pos-c">${(R.options.positionsOut||[]).map(v=>`<option value="${esc(v)}">`).join('')}</datalist><datalist id="pos-u">${(R.options.positionsIn||[]).map(v=>`<option value="${esc(v)}">`).join('')}</datalist>` +
+      `<p class="hint" style="margin-top:4px">${cur.type === 'apt' ? '共用部分' : '室外'}</p>` + t.common.map(i => itemRow(i, 'c')).join('') +
+      `<p class="hint" style="margin-top:10px">室內${cur.type === 'apt' ? '（第 1 戶；多戶請在桌機補）' : ''}</p>` + Object.values(groups).map(list => `<p class="hint">${esc(list[0].gname || '')}</p>` + list.map(i => itemRow(i, 'u')).join('')).join('');
+    const n = [...Object.values(cur.items), ...Object.values(cur.unitItems)].filter(d => d.rec === 'Y').length; $('#itemsBadge').textContent = n ? `建議申請 ${n} 項` : ''; }
 
-  $('#btnCopy').onclick = async () => { const txt = rows.map(([k,v])=>`${k}: ${Array.isArray(v)?v[0]:v}`).join('\n') + '\n---\n' + lines.join('\n'); try { await navigator.clipboard.writeText(txt); log('已複製'); } catch(e){ log('複製失敗，請長按選取'); } };
-  $('#btnClear').onclick = async () => { if(!confirm('清掉這一案在手機上的照片與備註？')) return; await del(cur.slug); cur = { slug:cur.slug, note:'', photos:[] }; $('#note').value = ''; render(); log('已清空'); };
+  // ---- 案件碼（桌機 → 手機） ----
+  function b64d(s){ return decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/')))); }
+  async function applyCode(str){ try { const o = JSON.parse(b64d(str.trim())); if(!o.s) throw new Error('沒有案號'); await save(true); await load(o.s); cur.type = o.t || cur.type; cur.applicant = o.a || cur.applicant; cur.addrText = o.d || cur.addrText; cur.floors = o.f || cur.floors; renderAll(); await save(true); toast('已帶入 ' + o.s); } catch(e){ toast('案件碼讀不了：' + e.message); } }
+  $('#btnCode').onclick = () => applyCode($('#codeIn').value);
 
-  load();
+  // ---- 案件清單 ----
+  $('#btnCases').onclick = async () => { const all = await dbAll(); const names = all.map(r => `${r.slug}　${r.data.applicant || ''}　${Object.keys(r.photos||{}).length} 張`); const pick = prompt('手機上的案件：\n' + (names.map((n,i)=>`${i+1}. ${n}`).join('\n') || '（無）') + '\n\n輸入編號開啟；輸入新案號建立；輸入「刪 編號」刪除', ''); if(pick === null || !pick.trim()) return; const m = pick.trim().match(/^刪\s*(\d+)$/); if(m){ const r = all[+m[1]-1]; if(r && confirm(`刪除手機上的 ${r.slug}？（桌機不受影響）`)){ await dbDel(r.slug); if(cur.slug === r.slug){ cur = blank(); photos = {}; renderAll(); } toast('已刪除'); } return; } const idx = +pick.trim(); await save(true); if(idx >= 1 && idx <= all.length) await load(all[idx-1].slug); else await load(pick.trim().toUpperCase()); };
+
+  // ---- 打包分享 ----
+  async function buildZip(){ readForm(); const zip = new JSZip(); const f = zip.folder(cur.slug); f.file('case.json', JSON.stringify(Object.assign({}, cur, { exportedAt:new Date().toISOString() }), null, 2)); const ph = f.folder('photos'); Object.entries(photos).forEach(([n, b]) => ph.file(n, b)); const blob = await zip.generateAsync({ type:'blob', compression:'STORE' }); return new File([blob], `${cur.slug}-現勘包.zip`, { type:'application/zip' }); }
+  async function share(){ if(!(await save(true))) return; try { const file = await buildZip(); $('#shareHint').textContent = `現勘包 ${Math.round(file.size/1024)} KB，${Object.keys(photos).length} 張照片`; if(navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title:file.name }); toast('已送出分享'); } else { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; a.click(); toast('這個瀏覽器不能分享檔案，改為下載'); } } catch(e){ if(e.name !== 'AbortError') toast('分享失敗：' + e.message); } }
+  $("#btnShare").onclick = share; $("#btnShare2").onclick = share; window.ylohMobile = { buildZip, save, get cur(){ return cur; } }; $('#btnSave').onclick = () => save(false);
+
+  // ---- 啟動 ----
+  (async () => { try { db = await openDb(); } catch(e){ $('#env').innerHTML = '<b class="bad">本機儲存打不開，資料不會保留。</b>'; }
+    const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; const canFiles = !!(navigator.canShare && navigator.canShare({ files:[ new File(['x'],'x.zip',{ type:'application/zip' }) ] }));
+    $('#env').innerHTML = `規則表 ${esc(R.version)}　${standalone ? 'App 模式' : '<b class="warn">Safari 模式：分享 → 加入主畫面 較穩</b>'}　${canFiles ? '' : '<b class="bad">此瀏覽器不能分享檔案</b>'}`;
+    if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+    const q = new URLSearchParams(location.search).get('c'); if(q){ await applyCode(q); history.replaceState(null, '', location.pathname); return; }
+    let last = ''; try { last = localStorage.getItem('yloh-mobile.last') || ''; } catch(e){}
+    if(db){ const all = await dbAll(); const s = last && all.some(r => r.slug === last) ? last : (all[0]?.slug || ''); if(s) await load(s); else renderAll(); } else renderAll();
+    setInterval(() => { try { if(cur.slug) localStorage.setItem('yloh-mobile.last', cur.slug); } catch(e){} }, 3000);
+  })();
 })();
 </script>
-
 </body>
 </html>
